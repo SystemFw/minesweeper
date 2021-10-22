@@ -26,7 +26,7 @@ object Engine {
   case object Flagged extends State
   case object Covered extends State
 
-  case class Cell(`type` : Type, state: State) {
+  case class Cell(`type`: Type, state: State) {
     def isBlank = `type` == Blank
     def isMine = `type` == Mine
     def isNeighbour = `type` != Blank && `type` != Mine
@@ -64,11 +64,13 @@ object Engine {
       val mineField = mines.foldMap(Space.point(_, Cell.mine))
 
       val otherCells = {
-        def status(point: Point) = Space.neighbours(point).toList
+        def status(point: Point) = Space
+          .neighbours(point)
+          .toList
           .foldMap { mineField.at(_).as(1) }
           .fold(Cell.blank)(Cell.neighbour)
 
-         grid(x, y).foldMap(point => Space.point(point, status(point)))
+        grid(x, y).foldMap(point => Space.point(point, status(point)))
       }
 
       Grid(x, y, mines.size, otherCells |+| mineField)
@@ -79,20 +81,26 @@ object Engine {
     }
   }
 
-  def gameTurn(point: Point, command: Command, grid: Grid): (Grid, Option[Outcome]) = {
+  def gameTurn(
+      point: Point,
+      command: Command,
+      grid: Grid
+  ): (Grid, Option[Outcome]) = {
     val input = (command, grid.grid.at(point).map(_.`type`))
 
     val newGrid = grid.update { grid =>
       input match {
-        case (Flag, _) => grid.zoom(point).map { cell =>
-          cell.state match {
-            case Uncovered => cell
-            case Covered => cell.flag
-            case Flagged => cell.cover
+        case (Flag, _) =>
+          grid.zoom(point).map { cell =>
+            cell.state match {
+              case Uncovered => cell
+              case Covered => cell.flag
+              case Flagged => cell.cover
+            }
           }
-        }
         case (Uncover, Some(Blank)) =>
-          val (blankRegion, edgePoints) = Space.region(point, grid.at(_).filter(_.isBlank))
+          val (blankRegion, edgePoints) =
+            Space.region(point, grid.at(_).filter(_.isBlank))
           val edge = edgePoints.toList.foldMap(grid.zoom).filter(_.isNeighbour)
           (blankRegion |+| edge).map(_.uncover)
         case (Uncover, Some(Mine)) =>
@@ -104,7 +112,7 @@ object Engine {
 
     val outcome = input match {
       case (Uncover, Some(Mine)) => Loss.some
-      case _  if newGrid.isComplete => Win.some
+      case _ if newGrid.isComplete => Win.some
       case _ => None
     }
 

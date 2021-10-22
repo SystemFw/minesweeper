@@ -26,16 +26,15 @@ object Space {
     for {
       x <- List(-1, 0, 1)
       y <- List(-1, 0, 1)
-      if (x,y) != (0, 0)
+      if (x, y) != (0, 0)
     } yield p |+| Point(x, y)
   }.toSet
 
-  /**
-    * Searches `p`, then its neighbourhood, then the neighbourhood of
+  /** Searches `p`, then its neighbourhood, then the neighbourhood of
     * the neighbourhood and so on, stopping in any direction when
     * `get` returns `None`, and continuing in the others to build a
     * region.
-    * 
+    *
     * Returns a `Space` representing the region and a `Set[Point]`
     * representing the edge of points surrounding but not belonging
     * to it.
@@ -47,7 +46,11 @@ object Space {
     }
 
     @tailrec
-    def loop(values: Space[A], seen: Set[Point], iteration: Set[Point]): (Space[A], Set[Point]) =
+    def loop(
+        values: Space[A],
+        seen: Set[Point],
+        iteration: Set[Point]
+    ): (Space[A], Set[Point]) =
       if (iteration.isEmpty) {
         val edge = values.points.flatMap(neighbours) -- seen
         values -> edge
@@ -68,4 +71,3 @@ object Space {
   implicit val pointMonoid: Monoid[Point] =
     Monoid.instance(origin, _ add _)
 }
-

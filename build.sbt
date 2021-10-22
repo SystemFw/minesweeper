@@ -8,5 +8,6 @@ lazy val root = (project in file("."))
       "org.typelevel" %% "cats-core" % "2.6.1",
       "org.typelevel" %% "cats-effect" % "3.2.0"
     ),
-    scalaSource in Compile := baseDirectory.value / "src"
+    scalafmtOnCompile := true,
+    Compile / scalaSource := baseDirectory.value / "src"
   )

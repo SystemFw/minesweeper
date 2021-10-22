@@ -18,7 +18,9 @@ case class UI(x: Int, y: Int, mines: Int) {
     } yield r
 
     def continuePrompt: IO[Unit] = for {
-      _ <- IO.println("\n\n Enter 'q' to exit or any other key to play a new game: ")
+      _ <- IO.println(
+        "\n\n Enter 'q' to exit or any other key to play a new game: "
+      )
       s <- IO.readLine
       r <- if (s.trim.toLowerCase == "q") IO.unit else mainLoop
     } yield r
@@ -27,10 +29,13 @@ case class UI(x: Int, y: Int, mines: Int) {
       inputPrompt.flatMap {
         case Quit => IO.unit
         case Reset => mainLoop
-        case Action(point, command) => gameTurn(point, command, grid) match {
-          case (newGrid, None) => IO.println(show(newGrid)) >> inputLoop(newGrid)
-          case (newGrid, outcome @ Some(_)) => IO.println(show(newGrid, outcome)) >> continuePrompt
-        }
+        case Action(point, command) =>
+          gameTurn(point, command, grid) match {
+            case (newGrid, None) =>
+              IO.println(show(newGrid)) >> inputLoop(newGrid)
+            case (newGrid, outcome @ Some(_)) =>
+              IO.println(show(newGrid, outcome)) >> continuePrompt
+          }
       }
 
     IO.println(show(grid)) >> inputLoop(grid)
@@ -50,18 +55,20 @@ case class UI(x: Int, y: Int, mines: Int) {
     def showCell(cell: Cell): Char = cell.state match {
       case Covered => '+'
       case Flagged => '!'
-      case Uncovered => cell.`type` match {
-        case Mine => 'X'
-        case Blank => ' '
-        case Neighbour(n) => (n + '0').toChar
-      }
+      case Uncovered =>
+        cell.`type` match {
+          case Mine => 'X'
+          case Blank => ' '
+          case Neighbour(n) => (n + '0').toChar
+        }
     }
 
     def header = "\nY\n^"
     def footer = s"""  ${xs.mkString(" ")} > X"""
 
     def newGrid = ys.map { y =>
-      val row = xs.map(x => showCell(grid.grid.at(Point(x, y)).get)).mkString(" ")
+      val row =
+        xs.map(x => showCell(grid.grid.at(Point(x, y)).get)).mkString(" ")
       s"$y $row"
     }
 
